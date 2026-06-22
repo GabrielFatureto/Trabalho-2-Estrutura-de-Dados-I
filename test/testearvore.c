@@ -15,6 +15,8 @@ void tearDown(void) {
 
 /* Funcao de callback para validar a ordem dos elementos no percurso */
 static void checar_ordem_visita(Forma f, void* aux) {
+    (void)aux;
+
     int id = forma_get_id(f);
     TEST_ASSERT_EQUAL_INT(ids_esperados[contador_visita], id);
     contador_visita++;
