@@ -18,4 +18,9 @@ void arvore_percorrer_em_ordem(Arvore a, void (*visitar)(Forma f, void* aux), vo
 /* Desaloca a memória da árvore. Se 'liberar_formas' for 1, desaloca também os elementos */
 void liberar_arvore(Arvore a, int liberar_formas);
 
+/* * Extrai todas as formas armazenadas na árvore e as coloca em um vetor alocado dinamicamente.
+ * O ponteiro 'total_elementos' será preenchido com o tamanho exato do vetor retornado.
+ */
+Forma* arvore_para_vetor(Arvore arvore, int* total_elementos);
+
 #endif /* ARVORE_H */

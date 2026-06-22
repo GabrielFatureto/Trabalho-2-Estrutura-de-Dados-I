@@ -106,3 +106,50 @@ void liberar_arvore(Arvore a, int liberar_formas) {
     liberar_no_recursivo(as->raiz, liberar_formas);
     free(as);
 }
+
+/* Função auxiliar interna para contar quantos nós existem na árvore */
+static int contar_nos(No* no) {
+    if (no == NULL) return 0;
+    return 1 + contar_nos(no->esquerda) + contar_nos(no->direita);
+}
+
+/* Função auxiliar interna que viaja pela árvore preenchendo o vetor */
+static void preencher_vetor_recursivo(No* no, Forma vetor[], int* indice_atual) {
+    if (no == NULL) return;
+
+    // Caminhamento em-ordem (Esquerda, Raiz, Direita)
+    preencher_vetor_recursivo(no->esquerda, vetor, indice_atual);
+
+    // Copia o ponteiro da forma para o vetor e avança o índice
+    vetor[*indice_atual] = no->forma; 
+    (*indice_atual)++;
+
+    preencher_vetor_recursivo(no->direita, vetor, indice_atual);
+}
+
+/* Função pública que extrai os dados para um vetor dinâmico */
+Forma* arvore_para_vetor(Arvore a, int* total_elementos) {
+    if (a == NULL) {
+        *total_elementos = 0;
+        return NULL;
+    }
+
+    // Faz o cast (conversão) para acessar os dados internos da árvore
+    ArvoreStruct* as = (ArvoreStruct*)a;
+    
+    // Descobre o tamanho exato necessário para o vetor
+    *total_elementos = contar_nos(as->raiz); 
+    
+    if (*total_elementos == 0) return NULL;
+
+    // Aloca o vetor dinâmico de ponteiros
+    Forma* vetor = (Forma*) malloc((*total_elementos) * sizeof(Forma));
+    if (vetor == NULL) {
+        return NULL; // Prevenção em caso de falta de memória
+    }
+
+    int indice = 0;
+    preencher_vetor_recursivo(as->raiz, vetor, &indice);
+
+    return vetor;
+}
