@@ -159,5 +159,65 @@ void liberar_forma(Forma f) {
     free(fs);
 }
 
+double forma_get_raio(Forma f) {
+    if (!f) return 0.0;
+    FormaStruct* fs = (FormaStruct*)f;
+    if (fs->tipo == TIPO_CIRCULO) {
+        return fs->dados.circulo.r;
+    }
+    return 0.0;
+}
 
+double forma_get_x2(Forma f) {
+    if (!f) return 0.0;
+    FormaStruct* fs = (FormaStruct*)f;
+    if (fs->tipo == TIPO_LINHA) {
+        return fs->dados.linha.x2;
+    }
+    return 0.0;
+}
 
+double forma_get_y2(Forma f) {
+    if (!f) return 0.0;
+    FormaStruct* fs = (FormaStruct*)f;
+    if (fs->tipo == TIPO_LINHA) {
+        return fs->dados.linha.y2;
+    }
+    return 0.0;
+}
+
+const char* forma_get_texto(Forma f) {
+    if (!f) return "";
+    FormaStruct* fs = (FormaStruct*)f;
+    if (fs->tipo == TIPO_TEXTO) {
+        return fs->dados.texto.txto;
+    }
+    return "";
+}
+
+const char* forma_get_font_family(Forma f) {
+    if (!f) return "sans";
+    FormaStruct* fs = (FormaStruct*)f;
+    if (fs->tipo == TIPO_TEXTO) {
+        return fs->dados.texto.fFamily;
+    }
+    return "sans";
+}
+
+const char* forma_get_font_weight(Forma f) {
+    if (!f) return "normal";
+    FormaStruct* fs = (FormaStruct*)f;
+    if (fs->tipo == TIPO_TEXTO) {
+        return fs->dados.texto.fWeight;
+    }
+    return "normal";
+}
+
+const char* forma_get_font_size(Forma f) {
+    if (!f) return "12px";
+    FormaStruct* fs = (FormaStruct*)f;
+    if (fs->tipo == TIPO_TEXTO) {
+        return fs->dados.texto.fSize;
+    }
+    return "12px";
+}

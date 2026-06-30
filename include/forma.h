@@ -30,6 +30,14 @@ double forma_get_area(Forma f);
 double forma_get_largura(Forma f);
 double forma_get_altura(Forma f);
 
+double forma_get_raio(Forma f);
+double forma_get_x2(Forma f);
+double forma_get_y2(Forma f);
+const char* forma_get_texto(Forma f);
+const char* forma_get_font_family(Forma f);
+const char* forma_get_font_weight(Forma f);
+const char* forma_get_font_size(Forma f);
+
 /* --- Setters --- */
 void forma_set_x(Forma f, double x);
 void forma_set_y(Forma f, double y);
