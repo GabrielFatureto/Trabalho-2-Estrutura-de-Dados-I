@@ -6,6 +6,10 @@
 #include "forma.h"
 #include "svg.h"
 
+// Assinaturas para o sistema de animação
+extern void init_animacao(const char* bsd, const char* base, Forma* todas, int n_todas, double rx, double ry, double rw, double rh, int tem_sel, Forma* sel, int n_sel, double sx, double sy, double dw);
+extern void finalizar_animacao();
+
 // --- Funções de Comparação de Critérios ---
 static int comparar_por_altura(Forma a, Forma b) {
     double h_a = forma_get_altura(a);
@@ -67,20 +71,14 @@ void processar_arquivo_qry(const char* caminho_qry, Arvore arvore, const char* b
     FILE* txt_relatorio = fopen(caminho_txt, "w");
     FILE* svg_final = svg_abrir(caminho_svg);
 
-    // =========================================================
-    // TRAVA DE SEGURANÇA CONTRA FALHA DE SEGMENTAÇÃO
-    // =========================================================
     if (!txt_relatorio || !svg_final) {
         printf("\n[ERRO CRÍTICO] Não foi possível criar os arquivos de saída em: '%s'\n", bsd);
-        printf("Verifique se o diretório existe ou se você tem permissão de escrita.\n\n");
-        
         if (txt_relatorio) fclose(txt_relatorio);
         if (svg_final) svg_fechar(svg_final);
         fclose(qry);
         return;
     }
 
-    // Primeiro, desenha o estado inicial completo da árvore no SVG final
     int total_nos_arvore = 0;
     Forma* todas_formas = arvore_para_vetor(arvore, &total_nos_arvore);
     if (todas_formas) {
@@ -92,8 +90,6 @@ void processar_arquivo_qry(const char* caminho_qry, Arvore arvore, const char* b
     char comando[20];
     Forma* selecionados = NULL;
     int total_selecionados = 0;
-    
-    // Variáveis para guardar a última área de seleção desenhada
     double sel_x = 0, sel_y = 0, sel_w = 0, sel_h = 0;
     int tem_selecao = 0;
 
@@ -105,7 +101,6 @@ void processar_arquivo_qry(const char* caminho_qry, Arvore arvore, const char* b
             if (selecionados) { free(selecionados); selecionados = NULL; }
             total_selecionados = 0;
 
-            // Filtra os elementos da árvore que estão dentro da caixa de seleção
             if (total_nos_arvore > 0 && todas_formas) {
                 selecionados = (Forma*)malloc(total_nos_arvore * sizeof(Forma));
                 for (int i = 0; i < total_nos_arvore; i++) {
@@ -125,10 +120,16 @@ void processar_arquivo_qry(const char* caminho_qry, Arvore arvore, const char* b
             if (total_selecionados > 0 && selecionados) {
                 ComparaForma cmp = selecionar_criterio(crit);
                 
-                // Ordena o vetor de ponteiros selecionados usando o algoritmo lido
+                // Usando x e y originais do comando find (onde o caso de teste espera a exibição)
+                init_animacao(bsd, nome_base, todas_formas, total_nos_arvore, 
+                              sel_x, sel_y, sel_w, sel_h, tem_selecao, 
+                              selecionados, total_selecionados, x, y, dw);
+                
                 executar_ordenacao(alg, selecionados, total_selecionados, cmp);
+                
+                finalizar_animacao();
 
-                // Modifica as posições das k primeiras formas ordenadas
+                // FIXA AS POSIÇÕES: Apenas das k primeiras formas
                 int limite = (k < total_selecionados) ? k : total_selecionados;
                 for (int i = 0; i < limite; i++) {
                     double novo_x = x + (i * dw);
@@ -137,7 +138,6 @@ void processar_arquivo_qry(const char* caminho_qry, Arvore arvore, const char* b
                     fprintf(txt_relatorio, "  - Forma ID %d antiga pos (%lf, %lf) -> Nova pos (%lf, %lf)\n", 
                             forma_get_id(selecionados[i]), forma_get_x(selecionados[i]), forma_get_y(selecionados[i]), novo_x, novo_y);
                     
-                    // Altera fisicamente as coordenadas da forma na memória
                     forma_set_x(selecionados[i], novo_x);
                     forma_set_y(selecionados[i], novo_y);
                 }
@@ -147,22 +147,17 @@ void processar_arquivo_qry(const char* caminho_qry, Arvore arvore, const char* b
         }
     }
 
-    // Se houve comando 'sel', desenha o retângulo pontilhado no SVG final para documentação
     if (tem_selecao) {
         svg_desenhar_retangulo_selecao(svg_final, sel_x, sel_y, sel_w, sel_h);
     }
-
-    // Redesenha as formas modificadas por cima para garantir a atualização visual
     if (todas_formas) {
         for (int i = 0; i < total_nos_arvore; i++) {
             svg_desenhar_forma(svg_final, todas_formas[i]);
         }
     }
 
-    // Limpeza de memória local
     if (todas_formas) free(todas_formas);
     if (selecionados) free(selecionados);
-
     fclose(qry);
     fclose(txt_relatorio);
     svg_fechar(svg_final);
