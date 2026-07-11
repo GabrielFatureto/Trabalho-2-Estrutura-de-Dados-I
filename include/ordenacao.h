@@ -14,29 +14,23 @@
  */
 typedef int (*ComparaForma)(Forma a, Forma b);
 
-
-/* =========================================================================
- * ALGORITMOS QUADRÁTICOS O(n²)
- * Ideais para vetores pequenos, simples de entender, mas sofrem com muitos dados.
- * ========================================================================= */
-
 /**
  * Compara vizinho com vizinho e vai empurrando o maior elemento para o final,
  * como se fosse uma bolha subindo até a superfície.
  */
-void bubble_sort(Forma vetor[], int n, ComparaForma cmp);
+void bubble_sort(Forma vetor[], int n, int k, ComparaForma cmp);
 
 /**
  * Passa pelo vetor procurando o menor elemento de todos e o coloca na primeira posição.
  * Depois, procura o segundo menor e coloca na segunda posição, e assim por diante.
  */
-void selection_sort(Forma vetor[], int n, ComparaForma cmp);
+void selection_sort(Forma vetor[], int n, int k, ComparaForma cmp);
 
 /**
  * Funciona como se você estivesse organizando cartas de baralho na mão:
  * pega uma forma por vez e a insere na posição correta comparando com as que já organizou.
  */
-void insertion_sort(Forma vetor[], int n, ComparaForma cmp);
+void insertion_sort(Forma vetor[], int n, int k, ComparaForma cmp);
 
 
 /* =========================================================================
@@ -48,18 +42,18 @@ void insertion_sort(Forma vetor[], int n, ComparaForma cmp);
  * Uma evolução do Insertion Sort que quebra o vetor em "subvetores" menores
  * usando saltos (gaps), deixando o vetor quase ordenado antes do passe final.
  */
-void shell_sort(Forma vetor[], int n, ComparaForma cmp);
+void shell_sort(Forma vetor[], int n, int k, ComparaForma cmp);
 
 /**
  * Escolhe um elemento como "pivô" e joga todo mundo que é menor que ele para a esquerda,
  * e quem é maior para a direita. Depois, faz o mesmo processo recursivamente nas duas metades.
  */
-void quick_sort(Forma vetor[], int inicio, int fim, ComparaForma cmp);
+void quick_sort(Forma vetor[], int inicio, int fim, int k, ComparaForma cmp);
 
 /**
  * Divide o vetor ao meio repetidamente até ficarem blocos de 1 único elemento.
  * Depois, vai juntando (intercalando) esses blocos de forma ordenada usando memória extra.
  */
-void merge_sort(Forma vetor[], int inicio, int fim, ComparaForma cmp);
+void merge_sort(Forma vetor[], int inicio, int fim, int k, ComparaForma cmp);
 
 #endif /* ORDENACAO_H */
