@@ -5,7 +5,28 @@
 #include <unistd.h> // Para o getopt
 #include "arvore.h"
 #include "geo.h"
-#include "qry.h"    // <-- Adicionado para o compilador conhecer o processar_arquivo_qry
+#include "qry.h"
+
+// --- Função para extrair o nome base sem pastas e sem extensão ---
+void extrair_nome_base(const char* caminho, char* saida) {
+    if (!caminho) {
+        saida[0] = '\0';
+        return;
+    }
+    
+    // 1. Encontra a última '/' para ignorar o caminho das pastas
+    const char* barra = strrchr(caminho, '/');
+    const char* nome = barra ? barra + 1 : caminho;
+    
+    // 2. Copia para a variável de saída
+    strcpy(saida, nome);
+    
+    // 3. Encontra o último '.' e corta a string ali para remover a extensão
+    char* ponto = strrchr(saida, '.');
+    if (ponto) {
+        *ponto = '\0';
+    }
+}
 
 int main(int argc, char* argv[]) {
     char* bed = NULL; // Diretório base de entrada 
@@ -61,8 +82,16 @@ int main(int argc, char* argv[]) {
             strcpy(caminho_qry, arq_qry);
         }
         
-        // Executa a inteligência de ordenação, relatórios em texto e imagens .svg
-        processar_arquivo_qry(caminho_qry, minha_arvore, bsd, arq_geo);
+        char base_geo[256] = "";
+        char base_qry[256] = "";
+        char base_final[512] = "";
+
+        extrair_nome_base(arq_geo, base_geo);
+        extrair_nome_base(arq_qry, base_qry);
+        
+        sprintf(base_final, "%s-%s", base_geo, base_qry);
+        
+        processar_arquivo_qry(caminho_qry, minha_arvore, bsd, base_final);
     }
 
     // Finalização segura limpando a memória das formas e da árvore
