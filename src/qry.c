@@ -34,13 +34,13 @@ static int comparar_por_cor(Forma a, Forma b) {
 }
 
 // Mapeia a sigla do algoritmo para a função correta
-static void executar_ordenacao(const char* alg, Forma vetor[], int n, ComparaForma cmp) {
-    if (strcmp(alg, "bs") == 0) bubble_sort(vetor, n, cmp);
-    else if (strcmp(alg, "ss") == 0) selection_sort(vetor, n, cmp);
-    else if (strcmp(alg, "is") == 0) insertion_sort(vetor, n, cmp);
-    else if (strcmp(alg, "shs") == 0) shell_sort(vetor, n, cmp);
-    else if (strcmp(alg, "qs") == 0) quick_sort(vetor, 0, n - 1, cmp);
-    else if (strcmp(alg, "ms") == 0) merge_sort(vetor, 0, n - 1, cmp);
+static void executar_ordenacao(const char* alg, Forma vetor[], int n, int k, ComparaForma cmp) {
+    if (strcmp(alg, "bs") == 0) bubble_sort(vetor, n, k, cmp);
+    else if (strcmp(alg, "ss") == 0) selection_sort(vetor, n, k, cmp);
+    else if (strcmp(alg, "is") == 0) insertion_sort(vetor, n, k, cmp);
+    else if (strcmp(alg, "shs") == 0) shell_sort(vetor, n, k, cmp);
+    else if (strcmp(alg, "qs") == 0) quick_sort(vetor, 0, n - 1, k, cmp);
+    else if (strcmp(alg, "ms") == 0) merge_sort(vetor, 0, n - 1, k, cmp);
 }
 
 // Mapeia a sigla do critério para a função correta
@@ -125,7 +125,7 @@ void processar_arquivo_qry(const char* caminho_qry, Arvore arvore, const char* b
                               sel_x, sel_y, sel_w, sel_h, tem_selecao, 
                               selecionados, total_selecionados, x, y, dw);
                 
-                executar_ordenacao(alg, selecionados, total_selecionados, cmp);
+                executar_ordenacao(alg, selecionados, total_selecionados, k, cmp);
                 
                 finalizar_animacao();
 

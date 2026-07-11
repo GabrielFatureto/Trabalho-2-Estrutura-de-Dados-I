@@ -21,7 +21,6 @@ static Forma* anim_selecionados = NULL;
 static int anim_n_selecionados = 0;
 static double anim_start_x, anim_start_y, anim_dw;
 
-// Estrutura para fazer backup das posições originais
 typedef struct {
     Forma f;
     double original_x;
@@ -46,7 +45,6 @@ void init_animacao(const char* bsd, const char* base,
     anim_start_y = sy;
     anim_dw = dw;
     
-    // Fazemos backup de onde cada forma selecionada estava antes de mexer
     backup_coords = (BackupPosicao*)malloc(n_sel * sizeof(BackupPosicao));
     for (int i = 0; i < n_sel; i++) {
         backup_coords[i].f = sel[i];
@@ -62,7 +60,6 @@ void finalizar_animacao() {
     if (!anim_ativo) return;
     anim_ativo = 0;
     
-    // Devolve cada forma exatamente para sua coordenada de origem
     for (int i = 0; i < anim_n_selecionados; i++) {
         forma_set_x(backup_coords[i].f, backup_coords[i].original_x);
         forma_set_y(backup_coords[i].f, backup_coords[i].original_y);
@@ -73,7 +70,6 @@ void finalizar_animacao() {
 static void gerar_frame() {
     if (!anim_ativo) return;
     
-    // Alinha temporariamente o vetor atual na tela para a foto
     for (int i = 0; i < anim_n_selecionados; i++) {
         forma_set_x(anim_selecionados[i], anim_start_x + (i * anim_dw));
         forma_set_y(anim_selecionados[i], anim_start_y);
@@ -84,7 +80,6 @@ static void gerar_frame() {
     
     FILE* svg = svg_abrir(caminho);
     if (svg) {
-        // Desenha todas as formas da árvore
         for (int i = 0; i < anim_n_todas; i++) {
             svg_desenhar_forma(svg, anim_todas[i]);
         }
@@ -95,11 +90,6 @@ static void gerar_frame() {
     }
 }
 
-// ==========================================
-// FUNÇÕES DE ORDENAÇÃO
-// ==========================================
-
-// Função auxiliar para trocar duas formas de posição no vetor
 static void trocar(Forma* a, Forma* b) {
     Forma temp = *a;
     *a = *b;
@@ -107,13 +97,15 @@ static void trocar(Forma* a, Forma* b) {
     gerar_frame();
 }
 
+
 // BUBBLE SORT
-void bubble_sort(Forma vetor[], int n, ComparaForma cmp) {
-    for (int i = 0; i < n - 1; i++) {
+void bubble_sort(Forma vetor[], int n, int k, ComparaForma cmp) {
+    int limite = (k < n) ? k : n;
+    for (int i = 0; i < limite; i++) {
         int trocou = 0;
-        for (int j = 0; j < n - i - 1; j++) {
-            if (cmp(vetor[j], vetor[j + 1]) > 0) {
-                trocar(&vetor[j], &vetor[j + 1]);
+        for (int j = n - 1; j > i; j--) {
+            if (cmp(vetor[j], vetor[j - 1]) < 0) {
+                trocar(&vetor[j], &vetor[j - 1]);
                 trocou = 1;
             }
         }
@@ -122,8 +114,9 @@ void bubble_sort(Forma vetor[], int n, ComparaForma cmp) {
 }
 
 // SELECTION SORT
-void selection_sort(Forma vetor[], int n, ComparaForma cmp) {
-    for (int i = 0; i < n - 1; i++) {
+void selection_sort(Forma vetor[], int n, int k, ComparaForma cmp) {
+    int limite = (k < n) ? k : n;
+    for (int i = 0; i < limite; i++) {
         int min_idx = i;
         for (int j = i + 1; j < n; j++) {
             if (cmp(vetor[j], vetor[min_idx]) < 0) {
@@ -137,7 +130,8 @@ void selection_sort(Forma vetor[], int n, ComparaForma cmp) {
 }
 
 // INSERTION SORT
-void insertion_sort(Forma vetor[], int n, ComparaForma cmp) {
+void insertion_sort(Forma vetor[], int n, int k, ComparaForma cmp) {
+    (void)k;
     for (int i = 1; i < n; i++) {
         Forma chave = vetor[i];
         int j = i - 1;
@@ -152,7 +146,8 @@ void insertion_sort(Forma vetor[], int n, ComparaForma cmp) {
 }
 
 // SHELL SORT
-void shell_sort(Forma vetor[], int n, ComparaForma cmp) {
+void shell_sort(Forma vetor[], int n, int k, ComparaForma cmp) {
+    (void)k;
     for (int gap = n / 2; gap > 0; gap /= 2) {
         for (int i = gap; i < n; i++) {
             Forma temp = vetor[i];
@@ -181,11 +176,14 @@ static int particiona(Forma vetor[], int inicio, int fim, ComparaForma cmp) {
     return (i + 1);
 }
 
-void quick_sort(Forma vetor[], int inicio, int fim, ComparaForma cmp) {
-    if (inicio < fim) {
+void quick_sort(Forma vetor[], int inicio, int fim, int k, ComparaForma cmp) {
+    // Só continua se o início da partição estiver dentro do que precisamos descobrir (k)
+    if (inicio < fim && inicio < k) {
         int pi = particiona(vetor, inicio, fim, cmp);
-        quick_sort(vetor, inicio, pi - 1, cmp);
-        quick_sort(vetor, pi + 1, fim, cmp);
+        quick_sort(vetor, inicio, pi - 1, k, cmp); // Sempre ordena a esquerda
+        if (pi < k) {
+            quick_sort(vetor, pi + 1, fim, k, cmp); // Só ordena a direita se precisar de mais elementos
+        }
     }
 }
 
@@ -199,26 +197,23 @@ static void intercalar(Forma vetor[], int inicio, int meio, int fim, ComparaForm
     for (int i = 0; i < n1; i++) L[i] = vetor[inicio + i];
     for (int j = 0; j < n2; j++) R[j] = vetor[meio + 1 + j];
 
-    int i = 0, j = 0, k = inicio;
+    int i = 0, j = 0, m = inicio;
     while (i < n1 && j < n2) {
-        if (cmp(L[i], R[j]) <= 0) {
-            vetor[k++] = L[i++];
-        } else {
-            vetor[k++] = R[j++];
-        }
+        if (cmp(L[i], R[j]) <= 0) vetor[m++] = L[i++];
+        else vetor[m++] = R[j++];
         gerar_frame();
     }
-    while (i < n1) { vetor[k++] = L[i++]; gerar_frame(); }
-    while (j < n2) { vetor[k++] = R[j++]; gerar_frame(); }
+    while (i < n1) { vetor[m++] = L[i++]; gerar_frame(); }
+    while (j < n2) { vetor[m++] = R[j++]; gerar_frame(); }
     free(L);
     free(R);
 }
 
-void merge_sort(Forma vetor[], int inicio, int fim, ComparaForma cmp) {
+void merge_sort(Forma vetor[], int inicio, int fim, int k, ComparaForma cmp) {
     if (inicio < fim) {
         int meio = inicio + (fim - inicio) / 2;
-        merge_sort(vetor, inicio, meio, cmp);
-        merge_sort(vetor, meio + 1, fim, cmp);
+        merge_sort(vetor, inicio, meio, k, cmp);
+        merge_sort(vetor, meio + 1, fim, k, cmp);
         intercalar(vetor, inicio, meio, fim, cmp);
     }
 }
